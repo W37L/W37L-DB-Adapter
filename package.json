@@ -4,7 +4,7 @@
   "description": "a simple adapter for the W37l-db",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose ./tests",
+    "test": "jest --runInBand --force-exit ./tests",
     "build": "tsc",
     "start": "npm run build && node dist/server.js"
   },
