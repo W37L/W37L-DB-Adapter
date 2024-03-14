@@ -24,6 +24,10 @@ const server = app.listen(port, () => {
 // Set up API routes
 setupRoutes(new PostService());
 
+app.get('/status', (req, res) => {
+    res.status(200).send('Server is running');
+});
+
 // Initialize Gun with server instance and optional S3 for persistence
 const gun = GUN({
     web: server,
