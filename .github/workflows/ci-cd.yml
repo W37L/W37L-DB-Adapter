@@ -48,8 +48,7 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
-            cd /path/to/W37L-DB-Adapter
-            git pull
+            cd W37L-DB-Adapter
             npm install
             npm run build
             pm2 restart all || pm2 start dist/server.js --name W37L-DB-Adapter
