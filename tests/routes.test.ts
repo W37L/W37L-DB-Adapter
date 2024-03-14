@@ -1,4 +1,4 @@
-import { app } from '../src/server';
+import { app, server } from '../src/server';
 const request = require('supertest');
 
 
@@ -20,6 +20,12 @@ const examplePost = {
     "isDeleted": false
 }
 
+afterAll((done) => {
+    server.close(() => {
+        console.log('Server closed');
+        done();
+    });
+});
 
 describe('Post Routes', () => {
     let newPostId: string;

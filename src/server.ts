@@ -37,4 +37,4 @@ const gun = GUN({
 });
 
 // Export gun for use in services
-export { gun, app };
+export { gun, app, server };
