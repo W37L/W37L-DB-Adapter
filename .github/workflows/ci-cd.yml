@@ -35,4 +35,25 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PORT: ${{ secrets.PORT }}
 
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setting up SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
+            cd /path/to/your/project
+            git pull
+            npm install --production
+            pm2 restart all || pm2 start dist/server.ts
+          EOF
+        env:
+          HOST: ${{ secrets.HOST }}
+
 
