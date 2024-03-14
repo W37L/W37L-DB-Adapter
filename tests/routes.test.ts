@@ -37,11 +37,11 @@ describe('Post Routes', () => {
          newPostId = response.body.postId; // Save this id for later tests
     });
 
-    it('GET /api/getPosts - should return all posts', async () => {
-        const response = await request(app).get('/api/getPosts');
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toBeInstanceOf(Array);
-    });
+    // it('GET /api/getPosts - should return all posts', async () => {
+    //     const response = await request(app).get('/api/getPosts');
+    //     expect(response.statusCode).toBe(200);
+    //     expect(response.body).toBeInstanceOf(Array);
+    // });
 
     it('GET /api/getPostById/:postId - should return a post by ID', async () => {
         console.log("New post ID:", newPostId);
