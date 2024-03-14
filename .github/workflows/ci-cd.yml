@@ -48,7 +48,7 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
-            cd /path/to/your/project
+            cd W37L-DB-Adapter
             git pull
             npm install --production
             pm2 restart all || pm2 start dist/server.ts
