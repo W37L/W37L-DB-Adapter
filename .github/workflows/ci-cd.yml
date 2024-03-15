@@ -23,9 +23,17 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm install
+      - name: Install AWS SDK (if required separately)
+        run: npm install aws-sdk
       - name: Run tests
         run: npm test
         timeout-minutes: 15
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          PORT: ${{ secrets.PORT }}
 
   build-and-push-docker:
     needs: build-and-test
