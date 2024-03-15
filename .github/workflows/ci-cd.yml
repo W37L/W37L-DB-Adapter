@@ -1,4 +1,4 @@
-name: Node.js CI/CD
+name: Node.js CI/CD with Docker
 
 on:
   push:
@@ -23,37 +23,26 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm install
-      - name: Install AWS SDK (if required separately)
-        run: npm install aws-sdk
       - name: Run tests
         run: npm test
         timeout-minutes: 15
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PORT: ${{ secrets.PORT }}
 
-  deploy:
+  build-and-push-docker:
     needs: build-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
-      - name: Setting up SSH key
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
-            cd W37L-DB-Adapter
-            npm install
-            npm run build
-            pm2 restart all || pm2 start dist/server.js --name W37L-DB-Adapter
-          EOF
-        env:
-          HOST: ${{ secrets.HOST }}
-
-
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: alfonsoridao/w37l-db-adapter:latest
