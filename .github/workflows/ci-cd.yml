@@ -59,13 +59,11 @@ jobs:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate with Google Cloud
-        env:
-          GCP_JSON: ${{ secrets.GCP_JSON_CREDENTIALS }}
-        run: |
-          echo "$GCP_JSON" | base64 --decode > /tmp/gcloud.json
-          gcloud auth activate-service-account --key-file=/tmp/gcloud.json
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GCP_JSON_CREDENTIALS }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
       - name: Deploy to Google Cloud Run
         run: |
           gcloud run deploy w37l-db-adapter \
@@ -74,6 +72,6 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
             --set-env-vars PORT=${{ secrets.PORT }},AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }},AWS_REGION=${{ secrets.AWS_REGION }}
-
+    
     
     
