@@ -23,7 +23,7 @@ const server = app.listen(port, () => {
 
 // Set up API routes
 setupRoutes(new PostService());
-
+git
 app.get('/status', (req, res) => {
     res.status(200).send('Server is running');
 });
@@ -35,7 +35,7 @@ const gun = GUN({
     s3: { // AWS S3 persistence settings
         key: process.env.AWS_ACCESS_KEY_ID || '',
         secret: process.env.AWS_SECRET_ACCESS_KEY || '',
-        bucket: process.env.AWS_S3_BUCKET || '',
+        bucket: process.env.AWS_S3_BUCKET || 'w37l',
         region: process.env.AWS_REGION || ''
     }
 });
