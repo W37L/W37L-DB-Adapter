@@ -23,7 +23,7 @@ const server = app.listen(port, () => {
 
 // Set up API routes
 setupRoutes(new PostService());
-git
+
 app.get('/status', (req, res) => {
     res.status(200).send('Server is running');
 });
