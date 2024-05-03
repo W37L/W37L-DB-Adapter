@@ -55,23 +55,23 @@ jobs:
           tags: alfonsoridao/w37l-db-adapter:latest
       # This is where the Docker build and push steps end.
 
-  deploy-to-cloud-run:
+  deploy-to-azure:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0.2.0
+      - name: Log in to Azure
+        uses: azure/login@v1
         with:
-          service_account_key: ${{ secrets.GCP_JSON_CREDENTIALS }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-      - name: Deploy to Google Cloud Run
-        run: |
-          gcloud run deploy w37l-db-adapter \
-            --image alfonsoridao/w37l-db-adapter:latest \
-            --platform managed \
-            --region ${{ secrets.GCP_REGION }} \
-            --allow-unauthenticated \
-            --set-env-vars PORT=${{ secrets.PORT }},AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }},AWS_REGION=${{ secrets.AWS_REGION }}
-    
-    
-    
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Instances
+        uses: 'azure/aci-deploy@v1'
+        with:
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          dns-name-label: w37l-db-adapter-${{ github.run_number }}
+          image: alfonsoridao/w37l-db-adapter:latest
+          name: w37l-db-adapter
+          location: ${{ secrets.AZURE_LOCATION }}
+          # Set any necessary environment variables for your container:
+          environment-variables: PORT=${{ secrets.PORT }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} AWS_REGION=${{ secrets.AWS_REGION }}
+

@@ -26,19 +26,19 @@ export type PostType = 'post' | 'comment' | 'retweet';
  * @property {boolean} isDeleted - Flag indicating whether the post has been deleted.
  */
 export interface Post {
-    postId: string;
-    userId: string;
-    parentPostId?: string;
-    type: PostType;
-    content: string;
-    likes: number;
-    createdAt: string;
-    mediaUrl?: string;
-    mediaType?: string;
-    thumbnail?: string | null;
-    retweets: number;
-    comments: number;
-    userPub: string;
-    signature: string;
-    isDeleted: boolean;
+    PostId: string;
+    UserId: string;
+    ParentPostId?: string;
+    Type: PostType;
+    Content: string;
+    Likes: number;
+    CreatedAt: string;
+    MediaUrl?: string;
+    MediaType?: string;
+    Thumbnail?: string | null;
+    Retweets: number;
+    Comments: number;
+    UserPub: string;
+    Signature: string;
+    IsDeleted: boolean;
 }

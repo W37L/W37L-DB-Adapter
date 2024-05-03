@@ -1,24 +1,24 @@
 import {IPostService} from '../contracts/IPostService';
-import {Post } from '../models/model';
-import { gun } from '../server';
-import { PostError } from '../utils/customErrors';
+import {Post} from '../models/model';
+import {gun} from '../server';
+import {PostError} from '../utils/customErrors';
 
 export class PostService implements IPostService {
 
     async createPost(post: Post): Promise<Post> {
         return new Promise((resolve, reject) => {
-            const postReference = gun.get('posts').get(post.postId);
+            const postReference = gun.get('posts').get(post.PostId);
             // Check if the post already exists
             postReference.once((existingPost) => {
                 if (existingPost && existingPost._ && existingPost._['#']) {
-                    reject(PostError.POST_ALREADY_EXISTS(post.postId));
+                    reject(PostError.POST_ALREADY_EXISTS(post.PostId));
                 } else {
                     // Create a new post
                     postReference.put(post, (ack:any) => {
                         if (ack.err) {
                             reject(new Error(`Failed to create post: ${ack.err}`));
                         } else {
-                            resolve({ ...post, postId: post.postId }); // Ensure postId is returned with the response
+                            resolve({...post, PostId: post.PostId}); // Ensure postId is returned with the response
                         }
                     });
                 }
@@ -43,15 +43,15 @@ export class PostService implements IPostService {
     async updatePost(updatedPost: Post): Promise<Post> {
         return new Promise((resolve, reject) => {
             // Extract postId from the updated post
-            const { postId } = updatedPost;
+            const {PostId} = updatedPost;
 
-            if (!postId) {
+            if (!PostId) {
                 reject(PostError.NO_POST_ID);
                 return;
             }
 
             // Reference to the post in Gun
-            const postRef = gun.get('posts').get(postId);
+            const postRef = gun.get('posts').get(PostId);
             // Retrieve the current post data
             postRef.once((currentPost) => {
                 if (!currentPost) {
@@ -60,7 +60,7 @@ export class PostService implements IPostService {
                 }
 
                 if (currentPost.isDeleted) {
-                    reject(PostError.POST_DELETED(postId));
+                    reject(PostError.POST_DELETED(PostId));
                     return;
                 }
 
@@ -72,7 +72,7 @@ export class PostService implements IPostService {
                     if (ack.err) {
                         reject(PostError.FAILED_TO_UPDATE_POST(ack.err));
                     } else {
-                        resolve({ ...mergedPost, postId }); // Ensure the postId is included in the returned post
+                        resolve({...mergedPost, PostId}); // Ensure the postId is included in the returned post
                     }
                 });
             });
@@ -134,8 +134,7 @@ export class PostService implements IPostService {
             const posts: Post[] = [];
             const gunPosts = gun.get('posts');
 
-
-            gunPosts.map().once((data, key) => {
+            gunPosts.map().on((data, key) => {
                 if (!data) {
                     reject(PostError.POST_NOT_FOUND);
                     return;
@@ -155,12 +154,12 @@ export class PostService implements IPostService {
             const posts: Post[] = [];
             const gunPosts = gun.get('posts');
 
-            gunPosts.map().once((data, key) => {
+            gunPosts.map().on((data, key) => {
                 if (!data) {
                     reject(PostError.POST_NOT_FOUND);
                     return;
                 }
-                if (data && !data.isDeleted && data.userId === userId) {
+                if (data && !data.isDeleted && data.UserId === userId) {
                     posts.push({ ...data, postId: key });
                 }
             });
