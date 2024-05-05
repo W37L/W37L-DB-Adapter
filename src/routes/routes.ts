@@ -56,6 +56,16 @@ export function setupRoutes(postService: IPostService) {
         }
     });
 
+    app.get('/api/getAll', async (req, res) => {
+            try {
+                const posts = await postService.getAllContent();
+                res.status(200).json(posts); // OK
+            } catch (error) {
+                res.status(500).json({error: PostError.SERVER_ERROR.message}); // Internal Server Error
+            }
+        }
+    );
+
     app.get('/api/getPosts', async (req, res) => {
             try {
                 const showDeleted = req.query.showDeleted === 'true';
@@ -72,6 +82,16 @@ export function setupRoutes(postService: IPostService) {
             const postId = req.params.postId;
             const post = await postService.getPostById(postId);
             res.status(200).json(post); // OK
+        } catch (error) {
+            res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
+        }
+    });
+
+    app.get('/api/getCommentById/:postId', async (req, res) => {
+        try {
+            const postId = req.params.postId;
+            const comment = await postService.getCommentById(postId);
+            res.status(200).json(comment); // OK
         } catch (error) {
             res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
         }
@@ -96,6 +116,17 @@ export function setupRoutes(postService: IPostService) {
         } catch (error) {
             res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
         }
+    });
+
+    app.get('/api/getCommentsByUserId/:userId', async (req, res) => {
+        try {
+            const userId = req.params.userId;
+            const comments = await postService.getCommentsByUserId(userId);
+            res.status(200).json(comments); // OK
+        } catch (error) {
+            res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
+        }
+
 
         app.get('/api/getPostWithChildren/:postId', async (req, res) => {
             try {

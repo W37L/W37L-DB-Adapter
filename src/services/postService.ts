@@ -5,20 +5,21 @@ import {PostError} from '../utils/customErrors';
 
 export class PostService implements IPostService {
 
+    /**
+     * Creates a new post ensuring it does not already exist.
+     */
     async createPost(post: Post): Promise<Post> {
         return new Promise((resolve, reject) => {
             const postReference = gun.get('posts').get(post.PostId);
-            // Check if the post already exists
             postReference.once((existingPost) => {
                 if (existingPost && existingPost._ && existingPost._['#']) {
                     reject(PostError.POST_ALREADY_EXISTS(post.PostId));
                 } else {
-                    // Create a new post
-                    postReference.put(post, (ack:any) => {
+                    postReference.put(post, (ack: any) => {
                         if (ack.err) {
                             reject(new Error(`Failed to create post: ${ack.err}`));
                         } else {
-                            resolve({...post, PostId: post.PostId}); // Ensure postId is returned with the response
+                            resolve({...post, PostId: post.PostId});
                         }
                     });
                 }
@@ -26,12 +27,15 @@ export class PostService implements IPostService {
         });
     }
 
+    /**
+     * Deletes a post by marking it as deleted without removing it from the database.
+     */
     async deletePost(postId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const post = gun.get('posts').get(postId);
             post.once((data) => {
                 if (data) {
-                    post.put({ isDeleted: true })
+                    post.put({isDeleted: true});
                     resolve();
                 } else {
                     reject(PostError.POST_NOT_FOUND);
@@ -40,157 +44,148 @@ export class PostService implements IPostService {
         });
     }
 
+    /**
+     * Updates an existing post, ensuring it is not marked as deleted.
+     */
     async updatePost(updatedPost: Post): Promise<Post> {
         return new Promise((resolve, reject) => {
-            // Extract postId from the updated post
             const {PostId} = updatedPost;
-
             if (!PostId) {
                 reject(PostError.NO_POST_ID);
                 return;
             }
-
-            // Reference to the post in Gun
             const postRef = gun.get('posts').get(PostId);
-            // Retrieve the current post data
             postRef.once((currentPost) => {
                 if (!currentPost) {
                     reject(PostError.POST_NOT_FOUND);
                     return;
                 }
-
                 if (currentPost.isDeleted) {
                     reject(PostError.POST_DELETED(PostId));
                     return;
                 }
-
                 const mergedPost = { ...currentPost, ...updatedPost };
-                delete mergedPost._; // Remove Gun internal metadata, otherwise it will cause an error
-
-                // Update the post in Gun
+                delete mergedPost._; // Remove Gun internal metadata
                 postRef.put(mergedPost, (ack: any) => {
                     if (ack.err) {
                         reject(PostError.FAILED_TO_UPDATE_POST(ack.err));
                     } else {
-                        resolve({...mergedPost, PostId}); // Ensure the postId is included in the returned post
+                        resolve({...mergedPost, PostId});
                     }
                 });
             });
         });
     }
 
+    /**
+     * Retrieves all content from the database, filtered by deletion status.
+     */
+    async getAllContent(showDeleted: boolean = false): Promise<Post[]> {
+        return this.filterPosts(showDeleted);
+    }
+
+    /**
+     * Retrieves all posts except comments, optionally including deleted posts.
+     */
+    async getAllPosts(showDeleted: boolean = false): Promise<Post[]> {
+        return this.filterPosts(showDeleted, (type) => type !== 'Comment');
+    }
+
+    /**
+     * Retrieves a post by its ID, excluding comments.
+     */
     async getPostById(postId: string): Promise<Post> {
+        return this.fetchSinglePost(postId, (type) => type !== 'Comment');
+    }
+
+    /**
+     * Retrieves a comment by its ID.
+     */
+    getCommentById(postId: string): Promise<Post> {
+        return this.fetchSinglePost(postId, (type) => type === 'Comment');
+    }
+
+    /**
+     * Retrieves all comments for a given post ID.
+     */
+    async getCommentsByPostId(postId: string): Promise<Post[]> {
+        return this.filterPostsByParentId(postId, (type) => type === 'Comment');
+    }
+
+    /**
+     * Retrieves all posts made by a specific user, excluding comments.
+     */
+    async getPostsByUserId(userId: string): Promise<Post[]> {
+        return this.filterPostsByUserId(userId, (type) => type !== 'Comment');
+    }
+
+    /**
+     * Retrieves all comments made by a specific user.
+     */
+    async getCommentsByUserId(userId: string): Promise<Post[]> {
+        return this.filterPostsByUserId(userId, (type) => type === 'Comment');
+    }
+
+    /**
+     * Retrieves a post and all its child comments.
+     */
+    async getPostWithChildren(postId: string): Promise<{ post: Post; children: Post[] }> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const post = await this.getPostById(postId);
+                const children = await this.getCommentsByPostId(postId);
+                resolve({post, children});
+            } catch (error: any) {
+                reject(PostError.ERROR_FETCHING_CHILDREN(error.message));
+            }
+        });
+    }
+
+
+    private async filterPosts(showDeleted: boolean, filterFn?: (type: string) => boolean): Promise<Post[]> {
+        return new Promise((resolve, reject) => {
+            const posts: Post[] = [];
+            const gunPosts = gun.get('posts');
+            gunPosts.map().on((data, key) => {
+                if (!data) {
+                    reject(PostError.POST_NOT_FOUND);
+                    return;
+                }
+                if (data && (showDeleted || !data.isDeleted) && (!filterFn || filterFn(data.Type))) {
+                    posts.push({ ...data, postId: key });
+                }
+            });
+            setTimeout(() => resolve(posts), 500); // Consider dynamic timing or event-based resolution
+        });
+    }
+
+    private async filterPostsByUserId(userId: string, filterFn: (type: string) => boolean): Promise<Post[]> {
+        return this.filterPosts(true, (type) => filterFn(type) && true);
+    }
+
+    private async filterPostsByParentId(parentId: string, filterFn: (type: string) => boolean): Promise<Post[]> {
+        return new Promise((resolve, reject) => {
+            const posts: Post[] = [];
+            const gunPosts = gun.get('posts');
+            gunPosts.map().on((data, key) => {
+                if (data && !data.isDeleted && data.ParentPostId === parentId && filterFn(data.Type)) {
+                    posts.push({ ...data, postId: key });
+                }
+            });
+            setTimeout(() => resolve(posts), 500);
+        });
+    }
+
+    private async fetchSinglePost(postId: string, filterFn: (type: string) => boolean): Promise<Post> {
         return new Promise((resolve, reject) => {
             const post = gun.get('posts').get(postId);
             post.once((data) => {
-                if (data && !data.isDeleted) {
-                    resolve({ ...data, postId: postId });
+                if (data && !data.isDeleted && filterFn(data.Type)) {
+                    resolve({...data, postId: postId});
                 } else {
                     reject(PostError.POST_NOT_FOUND);
                 }
             });
-        }
-        );
-    }
-
-    async getCommentsByPostId(postId: string): Promise<Post[]> {
-        return new Promise((resolve, reject) => {
-            const comments: Post[] = [];
-            const gunPosts = gun.get('posts');
-            let dataChecked = false;  // Flag to indicate if any data was checked
-
-            // Attempt to retrieve the parent post first
-            gunPosts.get(postId).once(parentData => {
-                if (!parentData) {
-                    reject(PostError.POST_NOT_FOUND);
-                    return;
-                }
-                dataChecked = true; // Mark that we have checked data
-
-                // If the post exists, retrieve its comments
-                gunPosts.map().once((data, key) => {
-                    // Note: This is simplified; depending on your data structure, you might need a different approach
-                    if (data && !data.isDeleted && data.type === 'comment' && data.parentPostId === postId) {
-                        comments.push({ ...data, postId: key });
-                    }
-                });
-
-                // Resolve after a short delay to allow for data collection
-                // This delay is arbitrary and not a guaranteed way to ensure all data has been collected
-                setTimeout(() => {
-                    if (!dataChecked) {
-                        reject(PostError.POST_NOT_FOUND);
-                    } else {
-                        resolve(comments);
-                    }
-                }, 500); // Adjust this delay based on expected latency and data size
-            });
-        });
-    }
-
-
-    async getAllPosts(showDeleted: boolean = false): Promise<Post[]> {
-        return new Promise((resolve, reject) => {
-            const posts: Post[] = [];
-            const gunPosts = gun.get('posts');
-
-            gunPosts.map().on((data, key) => {
-                if (!data) {
-                    reject(PostError.POST_NOT_FOUND);
-                    return;
-                }
-
-                if (data && (showDeleted || !data.isDeleted)) {
-                    posts.push({ ...data, postId: key });
-                }
-            });
-
-            setTimeout(() => resolve(posts), 500); // We still need a resolution strategy; without Gun's direct support, this is a compromise.
-        });
-    }
-
-    async getPostsByUserId(userId: string): Promise<Post[]> {
-        return new Promise((resolve, reject) => {
-            const posts: Post[] = [];
-            const gunPosts = gun.get('posts');
-
-            gunPosts.map().on((data, key) => {
-                if (!data) {
-                    reject(PostError.POST_NOT_FOUND);
-                    return;
-                }
-                if (data && !data.isDeleted && data.UserId === userId) {
-                    posts.push({ ...data, postId: key });
-                }
-            });
-
-            setTimeout(() => resolve(posts), 500); // Again, a compromise until a better resolution strategy is available.
-        });
-    }
-
-
-    async getPostWithChildren(postId: string): Promise<{ post: Post; children: Post[] }> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const post = await this.getPostById(postId); // Get the parent post by ID
-                if (!post) {
-                    reject(PostError.PARENT_POST_NOT_FOUND);
-                    return;
-                }
-
-                const children = await this.getCommentsByPostId(postId); // Get the comments (child posts) for the parent post
-                // If you have other types of child posts like retweets, you can fetch them similarly and merge them into the `children` array
-
-                // Construct the result with parent and children
-                const result = {
-                    post: post,
-                    children: children
-                };
-
-                resolve(result);
-            } catch (error:any) {
-                reject(PostError.ERROR_FETCHING_CHILDREN(error.message));
-            }
         });
     }
 }
