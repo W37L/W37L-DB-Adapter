@@ -9,7 +9,6 @@ export const POST_TYPES = {
     Retweet: 'Retweet'
 } as const;
 
-
 /**
  * Describes the structure and expected content of a social media post.
  *

@@ -4,9 +4,10 @@
   "description": "a simple adapter for the W37l-db",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand --force-exit ./tests",
+    "test": "jest --config jest.config.ts --runInBand --force-exit",
     "build": "tsc",
-    "start": "npm run build && node dist/server.js"
+    "start": "npm run build && node dist/server.js",
+    "check-types": "tsc --noEmit"
   },
   "keywords": [],
   "author": "@alfonsoridao",

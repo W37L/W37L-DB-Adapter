@@ -135,7 +135,7 @@ export class PostService implements IPostService {
         );
     }
 
-    getCommentById(postId: string): Promise<Post> {
+    async getCommentById(postId: string): Promise<Post> {
         return new Promise((resolve, reject) => {
             const post = gun.get(this.KEY_POSTS).get(postId);
                 post.once((data) => {
@@ -171,7 +171,6 @@ export class PostService implements IPostService {
         });
     }
 
-
     async getPostsByUserId(userId: string): Promise<Post[]> {
         return new Promise((resolve, reject) => {
             const posts: Post[] = [];
@@ -203,7 +202,6 @@ export class PostService implements IPostService {
         });
     }
 
-
     async getCommentsByUserId(userId: string): Promise<Post[]> {
         return new Promise((resolve, reject) => {
             const posts: Post[] = [];
@@ -234,7 +232,6 @@ export class PostService implements IPostService {
             }, 1000);
         });
     }
-
 
     async getPostWithChildren(postId: string): Promise<{ post: Post; children: Post[] }> {
         return new Promise(async (resolve, reject) => {

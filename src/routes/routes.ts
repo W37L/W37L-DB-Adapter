@@ -124,6 +124,16 @@ export function setupRoutes(postService: IPostService) {
         }
     });
 
+    app.get('/api/getPostWithChildren/:postId', async (req, res) => {
+        try {
+            const postId = req.params.postId;
+            const postWithChildren = await postService.getPostWithChildren(postId);
+            res.status(200).json(postWithChildren); // OK
+        } catch (error) {
+            res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
+        }
+    });
+
     app.get('/api/getPostsCommentedByUser/:userId', async (req, res) => {
         try {
             const userId = req.params.userId;
