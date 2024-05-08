@@ -23,8 +23,7 @@ export function setupRoutes(postService: IPostService) {
             } catch (error) {
                 res.status(500).send(PostError.SERVER_ERROR);
             }
-        }
-    );
+    });
 
     app.post('/api/post', async (req, res) => {
         try {
@@ -63,8 +62,7 @@ export function setupRoutes(postService: IPostService) {
             } catch (error) {
                 res.status(500).json({error: PostError.SERVER_ERROR.message}); // Internal Server Error
             }
-        }
-    );
+    });
 
     app.get('/api/getPosts', async (req, res) => {
             try {
@@ -74,8 +72,7 @@ export function setupRoutes(postService: IPostService) {
             } catch (error) {
                 res.status(500).json({error: PostError.SERVER_ERROR.message}); // Internal Server Error
             }
-        }
-    );
+    });
 
     app.get('/api/getPostById/:postId', async (req, res) => {
         try {
@@ -105,8 +102,7 @@ export function setupRoutes(postService: IPostService) {
             } catch (error) {
                 res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
             }
-        }
-    );
+    });
 
     app.get('/api/getPostsByUserId/:userId', async (req, res) => {
         try {
@@ -126,16 +122,16 @@ export function setupRoutes(postService: IPostService) {
         } catch (error) {
             res.status(404).json({error: PostError.POST_NOT_FOUND.message}); // Not Found
         }
-
-
-        app.get('/api/getPostWithChildren/:postId', async (req, res) => {
-            try {
-                const postId = req.params.postId;
-                const postWithChildren = await postService.getPostWithChildren(postId);
-                res.status(200).json(postWithChildren); // OK
-            } catch (error) {
-                res.status(404).json({error: PostError.PARENT_POST_NOT_FOUND.message}); // Not Found
-            }
-        });
     });
+
+    app.get('/api/getPostsCommentedByUser/:userId', async (req, res) => {
+        try {
+            const userId = req.params.userId;
+            const posts = await postService.getPostsCommentedByUser(userId);
+            res.status(200).json(posts); // OK
+        } catch (error) {
+            res.status(500).json({error: PostError.SERVER_ERROR.message}); // Internal Server Error
+        }
+    });
+
 }

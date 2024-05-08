@@ -1,9 +1,14 @@
 /**
  * Represents the type of the post.
- * @typedef {'post' | 'comment' | 'retweet'} PostType
+ * @typedef {'Original' | 'Comment' | 'Retweet'} PostType
  */
 
-export type PostType = 'post' | 'comment' | 'retweet';
+export const POST_TYPES = {
+    Original: 'Original',
+    Comment: 'Comment',
+    Retweet: 'Retweet'
+} as const;
+
 
 /**
  * Describes the structure and expected content of a social media post.
@@ -29,7 +34,7 @@ export interface Post {
     PostId: string;
     UserId: string;
     ParentPostId?: string;
-    Type: PostType;
+    Type: typeof POST_TYPES[keyof typeof POST_TYPES];
     Content: string;
     Likes: number;
     CreatedAt: string;

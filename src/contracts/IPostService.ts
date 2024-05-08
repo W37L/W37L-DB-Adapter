@@ -82,5 +82,11 @@ export interface IPostService {
      */
     getPostWithChildren(postId: string): Promise<{ post: Post; children: Post[] }>;
 
+    /**
+     * Retrieves posts that have comments by a specific user.
+     * @param {string} userId - The ID of the user whose commented posts to retrieve.
+     * @returns {Promise<Post[]>} An array of posts which have comments by the given user.
+     */
+    getPostsCommentedByUser(userId: string): Promise<Post[]>;
 
 }

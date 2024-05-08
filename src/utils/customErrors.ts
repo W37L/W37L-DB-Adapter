@@ -18,4 +18,5 @@ export class PostError extends CustomError {
     static FAILED_TO_UPDATE_POST = (err: string) => new PostError(`Failed to update post: ${err}`);
     static PARENT_POST_NOT_FOUND = new PostError('Parent post not found');
     static ERROR_FETCHING_CHILDREN = (error: string) => new PostError(`Error fetching post with children: ${error}`);
+    static NO_COMMENTS_FOUND = new PostError("No comments found or data fetching not complete");
 }
