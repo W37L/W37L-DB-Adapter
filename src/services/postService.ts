@@ -3,6 +3,9 @@ import {Post, POST_TYPES} from '../models/model';
 import {gun} from '../server';
 import {PostError} from '../utils/customErrors';
 
+/**
+ * A class that provides methods to manage posts and comments.
+ */
 export class PostService implements IPostService {
 
     KEY_POSTS = 'posts';

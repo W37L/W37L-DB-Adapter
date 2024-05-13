@@ -6,6 +6,8 @@ import * as path from "node:path";
 
 /**
  * Set up the routes for the app.
+ *
+ * @param {IPostService} postService - The post service object.
  */
 export function setupRoutes(postService: IPostService) {
 

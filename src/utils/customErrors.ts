@@ -1,4 +1,8 @@
 // CustomErrors.ts
+/**
+ * Represents a custom error.
+ * @extends Error
+ */
 export class CustomError extends Error {
     static SERVER_ERROR = new CustomError('Server error'); // Changed from method to property
 
@@ -8,6 +12,11 @@ export class CustomError extends Error {
     }
 }
 
+/**
+ * Represents an error related to posts.
+ *
+ * @extends CustomError
+ */
 export class PostError extends CustomError {
     // Inherits SERVER_ERROR from CustomError
     static POST_NOT_FOUND = new PostError('Post not found');
