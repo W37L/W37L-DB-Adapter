@@ -1,6 +1,8 @@
 import request from 'supertest';
 import {app, server} from '../src/server';
 
+const {v4: uuidv4} = require('uuid');
+
 afterAll(done => {
     setTimeout(() => {
         server.close(() => {
@@ -18,7 +20,7 @@ describe('Server API Tests', () => {
     // POST - Create a new post
     it('should create a new post', async () => {
         const postData = {
-            PostId: "PID-" + new Date().getTime().toString(),
+            PostId: "PID-" + uuidv4(),
             Content: "I am running a jest test here",
             CreatedAt: new Date().toISOString(),
             IsDeleted: false,
