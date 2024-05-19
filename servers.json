@@ -1,5 +1,5 @@
 {
   "servers": [
-    "https://db.w37l.com/gun"
+    "https://db.w37l.com:3000/gun"
   ]
 }

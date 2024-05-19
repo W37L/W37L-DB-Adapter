@@ -37,6 +37,12 @@ To start the server, run the following command:
 This will launch the server on the port specified in your `.env` file (default 3000) and connect it to the configured
 GunDB network and AWS S3 bucket for data persistence.
 
+## Server Instance
+
+The primary server instance is running at `http://db.w37l.com:3000`. For additional server endpoints and to participate
+in the network, please refer to the `servers.json` file located in the project directory, which includes a list of
+active nodes.
+
 ## API Endpoints
 
 Below are the available REST API endpoints that the server provides:
