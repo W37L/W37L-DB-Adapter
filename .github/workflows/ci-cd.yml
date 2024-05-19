@@ -55,23 +55,24 @@ jobs:
           tags: alfonsoridao/w37l-db-adapter:latest
       # This is where the Docker build and push steps end.
 
-  deploy-to-azure:
-    needs: build-and-push-docker
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Container Instances
-        uses: 'azure/aci-deploy@v1'
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          dns-name-label: w37l-db-adapter-${{ github.run_number }}
-          image: alfonsoridao/w37l-db-adapter:latest
-          name: w37l-db-adapter
-          location: ${{ secrets.AZURE_LOCATION }}
-          # Set any necessary environment variables for your container:
-          environment-variables: PORT=${{ secrets.PORT }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} AWS_REGION=${{ secrets.AWS_REGION }}
-
+#we will avoid the deployment to Azure for now, using AWS becuase we can handle the domains with Route 53 and the SSL certificates with ACM.
+#  deploy-to-azure:
+#    needs: build-and-push-docker
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Log in to Azure
+#        uses: azure/login@v1
+#        with:
+#          creds: ${{ secrets.AZURE_CREDENTIALS }}
+#
+#      - name: Deploy to Azure Container Instances
+#        uses: 'azure/aci-deploy@v1'
+#        with:
+#          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+#          dns-name-label: w37l-db-adapter-${{ github.run_number }}
+#          image: alfonsoridao/w37l-db-adapter:latest
+#          name: w37l-db-adapter
+#          location: ${{ secrets.AZURE_LOCATION }}
+#          # Set any necessary environment variables for your container:
+#          environment-variables: PORT=${{ secrets.PORT }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} AWS_REGION=${{ secrets.AWS_REGION }}
+#
